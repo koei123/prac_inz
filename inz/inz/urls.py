@@ -16,11 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from inz.exam import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('',views.home, name='home'),
     path('accounts/',include('django.contrib.auth.urls')),
-    path('signup/',views.signup, name='signup'),
-    path('secret/',views.secret_page, name='secret'),
-    path('admin/', admin.site.urls),
+    path('signup/',views.SignUpView.as_view(), name='signup'),
+    #path('secret/',views.secret_page, name='secret'),
+    #path('admin/', admin.site.urls),
+    #path('accounts/signup/', classroom.SignUpView.as_view(), name='signup'),
+    path('accounts/signup/student/', views.StudentSignUpView.as_view(), name='student_signup'),
+    path('accounts/signup/teacher/', views.TeacherSignUpView.as_view(), name='teacher_signup'),
     ]

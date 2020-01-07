@@ -1,12 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2> SIGNUP </h2>
-<form method="post">
-
-  {% csrf_token %}
-  {{form.as_p}}
-  <button type="submit"> sign up </button>
-
-</form>
+  <h2>Zarejestruj darmowe konto</h2>
+  <p class="lead">Wybierz poniżej, które konto chcesz założyc</p>
+  <a href="{% url 'student_signup' %}" class="btn btn-student btn-lg" role="button">Jestem studentem</a>
+  <a href="{% url 'teacher_signup' %}" class="btn btn-teacher btn-lg" role="button">Jestem nauczycielem</a>
 {% endblock %}
