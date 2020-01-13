@@ -1,1 +1,33 @@
 {% extends 'base.html' %}
+
+{% block content %}
+  {% include 'header.html' with active='new' %}
+  <div class="card">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Quiz</th>
+          <th class="d-none d-sm-table-cell">Temat</th>
+          <th class="d-none d-sm-table-cell">ilość pytań</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for quiz in quizzes %}
+          <tr>
+            <td class="align-middle">{{ quiz.name }}</td>
+            <td class="align-middle d-none d-sm-table-cell">{{ quiz.subject.get_html_badge }}</td>
+            <td class="align-middle d-none d-sm-table-cell">{{ quiz.questions_count }} pytań</td>
+            <td class="text-right">
+              <a href="{% url 'take_quiz' quiz.pk %}" class="btn btn-primary">Start!</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td class="bg-light text-center font-italic" colspan="4">Nie ma egzaminów do rozwiązanie w twoim temacie</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

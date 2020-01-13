@@ -3,18 +3,18 @@
 {% block content %}
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item active" aria-current="page">My Quizzes</li>
+      <li class="breadcrumb-item active" aria-current="page">Moje egzaminy</li>
     </ol>
   </nav>
-  <h2 class="mb-3">My Quizzes</h2>
+  <h2 class="mb-3">Moje egzaminy</h2>
   <div class="card">
     <table class="table mb-0">
       <thead>
         <tr>
-          <th>Quiz</th>
-          <th>Subject</th>
-          <th>Questions</th>
-          <th>Taken</th>
+          <th>Egzamin</th>
+          <th>Temat</th>
+          <th>ilość pytań</th>
+          <th>Rozwiązane</th>
           <th></th>
         </tr>
       </thead>
@@ -31,7 +31,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td class="bg-light text-center font-italic" colspan="5">You haven't created any quiz yet.</td>
+            <td class="bg-light text-center font-italic" colspan="5">Brak stworzonych egzaminów</td>
           </tr>
         {% endfor %}
       </tbody>

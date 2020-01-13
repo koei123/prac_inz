@@ -1,18 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Count, Sum
-from django.urls import reverse_lazy
+from django.db.models import Avg, Count, Sum
+from django.urls import reverse, reverse_lazy
+from django.forms import inlineformset_factory
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import CreateView, ListView, UpdateView
+from django.views.generic import (DetailView, DeleteView, CreateView, ListView, UpdateView)
 from django.views import View
 from django.views.generic import TemplateView
 
 from .decorators import student_required, teacher_required
-from .forms import TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm, TakeQuizForm
-from .models import User, Quiz, Student, TakenQuiz, Question
+from .forms import (TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm
+                    , TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
+
+from .models import User, Quiz, Student, TakenQuiz, Question, Answer
 
 
 class SignUpView(TemplateView):
@@ -94,6 +97,31 @@ class StudentQuizListView(ListView):
             .filter(questions_count__gt=0)
         return queryset
 
+@method_decorator([login_required, student_required], name='dispatch')
+class QuizResultsView(View):
+    """docstring for QuizResultsView."""
+    template_name = 'quiz_result.html'
+
+    def get(self, request, *args, **kwargs):
+        quiz = Quiz.objects.get(id = kwargs['pk'])
+        taken_quiz = TakenQuiz.objects.filter(student = request.user.student, quiz = quiz)
+        if not taken_quiz:
+            return redirect('quiz_list')
+        questions = Question.objects.filter(quiz = quiz)
+
+        return render(request, self.template_name, {'questions':questions,
+        'quiz':quiz, 'percentage': taken_quiz[0].percentage})
+
+class TakenQuizListView(ListView):
+    model = TakenQuiz
+    context_object_name = 'taken_quizzes'
+    template_name = 'taken_quiz_list.html'
+
+    def get_queryset(self):
+        queryset = self.request.user.student.taken_quizzes \
+            .select_related('quiz', 'quiz__subject') \
+            .order_by('quiz__name')
+        return queryset
 
 #views dla nauczyciela
 @method_decorator([login_required, teacher_required], name='dispatch')
