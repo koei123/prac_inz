@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,13 +34,15 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'inz.exam',
-    'django.contrib.admin',
+    'crispy_forms',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'crispy_forms',
+    'django.contrib.humanize',
+
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -59,7 +63,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'inz/templates')
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -112,7 +116,24 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
 AUTH_USER_MODEL = "exam.User"
 
+LOGIN_URL = 'login'
+
+LOGOUT_URL = 'logout'
+
 LOGIN_REDIRECT_URL = 'home'
+
 LOGOUT_REDIRECT_URL = 'home'
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-secondary',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}

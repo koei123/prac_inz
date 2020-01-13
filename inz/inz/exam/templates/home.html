@@ -1,15 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2> Witaj na stronie głównej</h2>
+<h2> Witaj w aplikacji do tworzenia egzaminów</h2>
 <p> Hi {% if user.is_authenticated %}{{ user.username }} {% else %}visitor {% endif %}</p>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin libero dolor, tempor vitae finibus sit amet, dapibus vitae mi. Aenean lectus lectus, egestas in libero vel, ultricies semper urna. Ut nec urna ex. Pellentesque euismod sagittis nisl a efficitur. Ut ullamcorper lectus id est euismod, in cursus dui malesuada. Aenean maximus suscipit nibh eu aliquam. Pellentesque eget urna in nulla malesuada aliquet.
-
-Fusce non malesuada libero. Maecenas vestibulum venenatis lectus, quis mattis lacus vulputate quis. Etiam quis magna vel metus gravida interdum. Fusce semper tortor elementum finibus egestas. Curabitur facilisis tellus urna, eget commodo arcu congue a. Sed vitae nunc arcu. Nam dictum diam egestas nisi ultrices, sed mollis velit tempor. Donec quis tincidunt ligula. Aliquam semper risus vitae sapien pharetra, id suscipit arcu faucibus. Nam semper enim condimentum felis lacinia, ut malesuada lectus vestibulum.
-
-Nullam rutrum aliquam dui quis varius. Aliquam non magna orci. Aliquam rutrum tristique eros. Suspendisse imperdiet eu diam quis pharetra. In euismod quis ligula volutpat vulputate. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed elit justo, fringilla at feugiat a, cursus commodo lorem.
-
-Morbi lectus libero, iaculis sed augue vitae, gravida viverra tellus. Quisque lectus mi, commodo ut nibh non, pretium vestibulum turpis. Fusce tincidunt sollicitudin risus, nec mollis sapien. Phasellus mattis sit amet massa molestie blandit. Nullam egestas augue risus, vel iaculis libero mattis eget. Nulla in magna maximus, lobortis risus ut, hendrerit libero. Suspendisse facilisis iaculis consectetur. Fusce et tempor enim. Vestibulum viverra nibh et lacus laoreet, in iaculis nibh semper. Pellentesque ornare, elit et rhoncus auctor, erat elit euismod enim, eu sagittis eros lacus vitae diam. Donec nunc magna, aliquam at urna nec, consequat tempor enim. Nulla fringilla sem nec blandit dignissim.
+<p class="lead">
+  jeżeli masz konto, zaloguj sie. Jezeli nie masz konta utwórz nowe jako student lub nauczyciel.
 </p>
 <strong> zarejestrowani użytkownicy na stronie: {{count}}  </strong>
 {% endblock %}

@@ -1,42 +1,18 @@
-#from django.shortcuts import render, redirect
-#from django.contrib.auth.models import User
-#from django.contrib.auth.forms import UserCreationForm
-#from django.contrib.auth.decorators import login_required
-
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Count, Sum
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.contrib.auth import login
-from django.shortcuts import redirect, render
-from django.views.generic import CreateView
-from .forms import TeacherSignUpForm
-from .forms import StudentSignUpForm
-from .models import User
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import CreateView, ListView, UpdateView
+from django.views import View
 from django.views.generic import TemplateView
 
-def home(request):
-    count = User.objects.count()
-    return render(request,'home.html',{
-    'count':count,
-    })
-#
-#
-#def signup(request):
-#    if request.method == ('POST'):
-#        form = UserCreationForm(request.POST)
-#        if form.is_valid():
-#            form.save()
-#            return redirect('home')
-#    else:
-#        form = UserCreationForm()
-#    return render(request,'registration/signup.html',{
-#        'form':form
-#    })
-#
-#@login_required
-#def secret_page(request):
-#    return render(request,'secret_page.html')
-#
-
-
-
+from .decorators import student_required
+from .forms import TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm, TakeQuizForm
+from .models import User, Quiz, Student, TakenQuiz, Question
 
 
 class SignUpView(TemplateView):
@@ -54,7 +30,7 @@ class StudentSignUpView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        return redirect('home')
+        return redirect('quiz_list')
 
 class TeacherSignUpView(CreateView):
     model = User
@@ -68,4 +44,52 @@ class TeacherSignUpView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        return redirect('home')
+        return redirect('quiz_change_list')
+
+
+def home(request):
+    if request.user.is_authenticated:
+        if request.user.is_teacher:
+            return redirect('quiz_change_list')
+        else:
+            return redirect('quiz_list')
+    count = User.objects.count()
+    return render(request, 'home.html',{
+    'count':count,
+    })
+
+#views dla studenta
+@method_decorator([login_required, student_required], name='dispatch')
+class StudentInterestsView(UpdateView):
+    """docstring for StudentInterestsView."""
+    model = Student
+    form_class = StudentInterestsForm
+    template_name = 'interests_form.html'
+    success_url = reverse_lazy('quiz_list')
+
+    def get_object(self):
+        return self.request.user.student
+
+    def form_valid(self, form):
+        messages.success(self, request, 'pomyślnie zaktualizowano zainteresowania!')
+        return super().form_valid(form)
+
+@method_decorator([login_required, student_required], name='dispatch')
+class QuizListView(ListView):
+    """docstring for QuizListView."""
+    model = Quiz
+    ordering = ('name', )
+    context_object_name = 'quizzes'
+    template_name = 'quiz_list.html'
+
+
+
+    def get_queryset(self):
+        student = self.request.user.student
+        student_interests = student.interests.values_list('pk', flat=True)
+        taken_quizzes = student.quizzes.values_list('pk', flat=True)
+        queryset = Quiz.objects.filter(subject__in=student_interests) \
+            .exclude(pk__in=taken_quizzes) \
+            .annotate(questions_count=Count('questions')) \
+            .filter(questions_count__gt=0)
+        return queryset
