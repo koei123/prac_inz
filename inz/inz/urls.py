@@ -22,7 +22,8 @@ from inz.exam import views
 
 urlpatterns = [
     path('',views.home, name='home'),
-    path('students/', views.QuizListView.as_view(), name='quiz_list'),
+    path('students/', views.StudentQuizListView.as_view(), name='quiz_list'),
+    path('teachers/', views.TeacherQuizListView.as_view(), name='quiz_change_list'),
     path('accounts/login/', auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('accounts/',include('django.contrib.auth.urls')),
     path('accounts/signup/',views.SignUpView.as_view(), name='signup'),

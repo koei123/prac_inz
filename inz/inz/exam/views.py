@@ -10,7 +10,7 @@ from django.views.generic import CreateView, ListView, UpdateView
 from django.views import View
 from django.views.generic import TemplateView
 
-from .decorators import student_required
+from .decorators import student_required, teacher_required
 from .forms import TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm, TakeQuizForm
 from .models import User, Quiz, Student, TakenQuiz, Question
 
@@ -75,7 +75,7 @@ class StudentInterestsView(UpdateView):
         return super().form_valid(form)
 
 @method_decorator([login_required, student_required], name='dispatch')
-class QuizListView(ListView):
+class StudentQuizListView(ListView):
     """docstring for QuizListView."""
     model = Quiz
     ordering = ('name', )
@@ -92,4 +92,21 @@ class QuizListView(ListView):
             .exclude(pk__in=taken_quizzes) \
             .annotate(questions_count=Count('questions')) \
             .filter(questions_count__gt=0)
+        return queryset
+
+
+#views dla nauczyciela
+@method_decorator([login_required, teacher_required], name='dispatch')
+class TeacherQuizListView(ListView):
+    """docstring for TeacherQuizListView."""
+    model = Quiz
+    ordering = ('name', )
+    context_object_name = 'quizzes'
+    template_name = 'quiz_change_list.html'
+
+    def get_queryset(self):
+        queryset = self.request.user.quizzes \
+            .select_related('subject') \
+            .annotate(questions_count=Count('questions', distinct=True)) \
+            .annotate(taken_count=Count('taken_quizzes', distinct=True))
         return queryset
