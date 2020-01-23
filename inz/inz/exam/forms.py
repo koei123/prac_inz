@@ -5,6 +5,19 @@ from django.forms.utils import ValidationError
 
 from .models import (Answer, Question, Student, User, Subject, StudentAnswer)
 
+
+class TeacherSignUpForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_teacher = True
+        if commit:
+            user.save()
+        return user
+
+
 class StudentSignUpForm(UserCreationForm):
     interests = forms.ModelMultipleChoiceField(
         queryset=Subject.objects.all(),
@@ -24,51 +37,24 @@ class StudentSignUpForm(UserCreationForm):
         student.interests.add(*self.cleaned_data.get('interests'))
         return user
 
-class TeacherSignUpForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
-        model = User
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.is_teacher = True
-        if commit:
-            user.save()
-        return user
 
 
 #forms dla Studenta
 class StudentInterestsForm(forms.ModelForm):
-    """docstring forStudentInterestForm."""
-
     class Meta:
         model = Student
-        fields = ('interests',)
+        fields = ('interests', )
         widget = {
-        'interests':forms.CheckboxSelectMultiple
+        'interests': forms.CheckboxSelectMultiple,
         }
+
 
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ('text', )
 
-class TakeQuizForm(forms.ModelForm):
-    """docstring for TakeQuizForm."""
-    answer = forms.ModelChoiceField(
-    queryset = Answer.objects.none(),
-    widget = forms.RadioSelect(),
-    required = True,
-    empty_label = None
-    )
 
-    class Meta:
-        model = StudentAnswer
-        fields = ('answer', )
-
-    def __init__(self, *arg, **kwargs):
-        question = kwargs.pop('question')
-        super().__init__(*args, **kwargs)
-        self.fields['answer'].queryset = question.answers.order_by('text')
 
 #forms dla nauczyciela
 

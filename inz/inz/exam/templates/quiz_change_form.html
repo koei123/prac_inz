@@ -1,1 +1,61 @@
-(% extends 'base.html' %)
+{% extends 'base.html' %}
+
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'quiz_change_list' %}">Moje egzaminy</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ quiz.name }}</li>
+    </ol>
+  </nav>
+  <h2 class="mb-3">
+    {{ quiz.name }}
+    <a href="{% url 'quiz_results' quiz.pk %}" class="btn btn-primary float-right">Zobacz wynik</a>
+  </h2>
+  <div class="row mb-3">
+    <div class="col-md-6 col-sm-8 col-12">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-success">Zapisz</button>
+        <a href="{% url 'quiz_change_list' %}" class="btn btn-outline-secondary" role="button">Anuluj</a>
+        <a href="{% url 'quiz_delete' quiz.pk %}" class="btn btn-danger float-right">Usuń</a>
+      </form>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-10">
+          <strong>Pytania</strong>
+        </div>
+        <div class="col-2">
+          <strong>Odpowiedzi</strong>
+        </div>
+      </div>
+    </div>
+    <div class="list-group list-group-flush list-group-formset">
+      {% for question in questions %}
+        <div class="list-group-item">
+          <div class="row">
+            <div class="col-10">
+            <a href="{% url 'question_change' quiz.pk question.pk %}">{{ question.text }}</a>
+            </div>
+            <div class="col-2">
+              {{ question.answers_count }}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="list-group-item text-center">
+          <p class="text-muted font-italic mb-0">Nie masz żadnych pytań,  <a href="{% url 'question_add' quiz.pk %}">dodaj pierwsze pytanie</a>.</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'question_add' quiz.pk %}" class="btn btn-primary btn-sm">Dodaj pytanie</a>
+    </div>
+  </div>
+{% endblock %}

@@ -6,7 +6,7 @@
     <table class="table mb-0">
       <thead>
         <tr>
-          <th>Quiz</th>
+          <th>Egzamin</th>
           <th class="d-none d-sm-table-cell">Temat</th>
           <th class="d-none d-sm-table-cell">ilość pytań</th>
           <th></th>
@@ -17,7 +17,7 @@
           <tr>
             <td class="align-middle">{{ quiz.name }}</td>
             <td class="align-middle d-none d-sm-table-cell">{{ quiz.subject.get_html_badge }}</td>
-            <td class="align-middle d-none d-sm-table-cell">{{ quiz.questions_count }} pytań</td>
+            <td class="align-middle d-none d-sm-table-cell">{{ quiz.questions_count }}</td>
             <td class="text-right">
               <a href="{% url 'take_quiz' quiz.pk %}" class="btn btn-primary">Start!</a>
             </td>

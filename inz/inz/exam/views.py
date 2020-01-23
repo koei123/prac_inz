@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 
 from .decorators import student_required, teacher_required
 from .forms import (TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm
-                    , TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
+, TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
 
 from .models import User, Quiz, Student, TakenQuiz, Question, Answer, Subject
 
@@ -74,7 +74,7 @@ class StudentInterestsView(UpdateView):
         return self.request.user.student
 
     def form_valid(self, form):
-        messages.success(self, request, 'pomyślnie zaktualizowano zainteresowania!')
+        messages.success(self.request, 'pomyślnie zaktualizowano zainteresowania!')
         return super().form_valid(form)
 
 @method_decorator([login_required, student_required], name='dispatch')
@@ -98,9 +98,9 @@ class StudentQuizListView(ListView):
         return queryset
 
 @method_decorator([login_required, student_required], name='dispatch')
-class QuizResultsView(View):
+class StudentQuizResultsView(View):
     """docstring for QuizResultsView."""
-    template_name = 'quiz_result.html'
+    template_name = 'quiz_result_student.html'
 
     def get(self, request, *args, **kwargs):
         quiz = Quiz.objects.get(id = kwargs['pk'])
@@ -124,6 +124,52 @@ class TakenQuizListView(ListView):
             .order_by('quiz__name')
         return queryset
 
+@login_required
+@student_required
+def take_quiz(request, pk):
+    quiz = get_object_or_404(Quiz, pk=pk)
+    student = request.user.student
+
+    if student.quizzes.filter(pk=pk).exists():
+        return render(request, 'taken_quiz.html')
+
+    total_questions = quiz.questions.count()
+    unanswered_questions = student.get_unanswered_question(quiz)
+    total_unanswered_questions = unanswered_questions.count()
+    progress = 100 - round(((total_unanswered_questions - 1) / total_questions) * 100)
+    question = unanswered_questions.first()
+
+
+    if request.method == 'POST':
+        form = TakeQuizForm(question=question, data=request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                student_answer = form.save(commit=False)
+                student_answer.student = student
+                student_answer.save()
+                if student.get_unanswered_question(quiz).exists():
+                    return redirect('take_quiz', pk)
+                else:
+                    correct_answers = student.quiz_answers.filter(answer__question__quiz=quiz, answer__is_correct=True).count()
+                    percentage = round((correct_answers / (total_questions+correct_answers)) *100.0, 2)
+                    TakenQuiz.objects.create(student=student, quiz=quiz, score=correct_answers, percentage=percentage)
+                    student.save()
+                    if percentage < 50.0:
+                        messages.warning(request, 'Powodzenia następnym razem!, twój wynik egzaminu: %s był %s.' % (quiz.name, percentage))
+                    else:
+                        messages.success(request, 'Gratulacje!, Zdałeś egzamin: %s. Twój wynik to %s.' % (quiz.name, percentage))
+                    return redirect('quiz_list')
+    else:
+        form = TakeQuizForm(question=question)
+
+    return render(request, 'take_quiz_form.html', {
+    'quiz': quiz,
+    'question': question,
+    'form': form,
+    'progress': progress,
+    'answered_questions': total_questions - total_unanswered_questions,
+    'total_questions': total_questions
+    })
 #views dla nauczyciela
 @method_decorator([login_required, teacher_required], name='dispatch')
 class TeacherQuizListView(ListView):
@@ -180,3 +226,127 @@ class QuizSubjectCreateView(CreateView):
         subject = form.save()
         messages.success(self.request, 'pomyślnie stworzono temat')
         return redirect('quiz_change_list')
+
+@login_required
+@teacher_required
+def question_add(request,pk):
+    quiz = get_object_or_404(Quiz, pk=pk, person=request.user)
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.quiz = quiz
+            question.save()
+            messages.success(request, 'możesz dodać odpowiedzi/opcje do pytania')
+            return redirect('question_change', quiz.pk, question.pk)
+    else:
+        form = QuestionForm()
+
+    return render(request, 'question_add_form.html', {
+                                                'quiz': quiz,
+                                                'form': form })
+
+
+@login_required
+@teacher_required
+
+def question_change(request, quiz_pk, question_pk):
+
+    quiz = get_object_or_404(Quiz, pk=quiz_pk, person = request.user)
+    question = get_object_or_404(Question, pk= question_pk, quiz=quiz)
+
+    AnswerFormSet = inlineformset_factory(
+        Question,  # rodzic model
+        Answer,  # podstawowy model
+        formset=BaseAnswerInLineFormSet,
+        fields=('text', 'is_correct'),
+        min_num=2,
+        validate_min=True,
+        max_num=10,
+        validate_max=True
+    )
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question)
+        formset = AnswerFormSet(request.POST, instance=question)
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                formset.save()
+            messages.success(request, 'Pytanie i odpowiedz zapisano pomyślnie')
+            return redirect('quiz_change', quiz.pk)
+    else:
+        form = QuestionForm(instance=question)
+        formset = AnswerFormSet(instance=question)
+
+    return render(request, 'question_change_form.html', {
+                                                        'quiz': quiz,
+                                                        'question': question,
+                                                        'form': form,
+                                                        'formset': formset,
+    })
+
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class QuestionDeleteView(DeleteView):
+    model = Question
+    context_object_name = 'question'
+    template_name = 'question_delete.html'
+    pk_url_kwarg = 'question_pk'
+
+    def get_context_data(self, **kwargs):
+        question = self.get_object()
+        kwargs['quiz'] = question.quiz
+        return super().get_context_data(**kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        question = self.get_object()
+        messages.success(request, 'usunięto pytanie %s pomyślnie' % question.text)
+        return super().delete(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Question.objects.filter(quiz__person=self.request.user)
+
+    def get_success_url(self):
+        question = self.get_object()
+        return reverse('quiz_change', kwargs={'pk': question.quiz.id})
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class QuizResultsView(DetailView):
+    model = Quiz
+    context_object_name = 'quiz'
+    template_name = 'quiz_result_teacher.html'
+
+    def get_context_data(self, **kwargs):
+        quiz = self.get_object()
+        taken_quizzes = quiz.taken_quizzes.select_related('student__user').order_by('-date')
+        total_taken_quizzes = taken_quizzes.count()
+        quiz_score = quiz.taken_quizzes.aggregate(average_score=Avg('score'))
+        extra_context = {
+            'taken_quizzes': taken_quizzes,
+            'total_taken_quizzes': total_taken_quizzes,
+            'quiz_score': quiz_score
+        }
+        kwargs.update(extra_context)
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return self.request.user.quizzes.all()
+
+
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class QuizDeleteView(DeleteView):
+    model = Quiz
+    context_object_name = 'quiz'
+    template_name = 'quiz_delete.html'
+    success_url = reverse_lazy('quiz_change_list')
+
+    def delete(self, request, *args, **kwargs):
+        quiz = self.get_object()
+        messages.success(request, 'Examin %s został usunięty pomyślnie' % quiz.name)
+        return super().delete(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.request.user.quizzes.all()
