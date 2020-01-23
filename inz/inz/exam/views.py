@@ -15,7 +15,7 @@ from .decorators import student_required, teacher_required
 from .forms import (TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm
                     , TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
 
-from .models import User, Quiz, Student, TakenQuiz, Question, Answer
+from .models import User, Quiz, Student, TakenQuiz, Question, Answer, Subject
 
 
 class SignUpView(TemplateView):
@@ -112,6 +112,7 @@ class QuizResultsView(View):
         return render(request, self.template_name, {'questions':questions,
         'quiz':quiz, 'percentage': taken_quiz[0].percentage})
 
+@method_decorator([login_required, student_required], name='dispatch')
 class TakenQuizListView(ListView):
     model = TakenQuiz
     context_object_name = 'taken_quizzes'
@@ -138,3 +139,44 @@ class TeacherQuizListView(ListView):
             .annotate(questions_count=Count('questions', distinct=True)) \
             .annotate(taken_count=Count('taken_quizzes', distinct=True))
         return queryset
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class QuizCreateView(CreateView):
+    """docstring for QuizCreateView."""
+    model = Quiz
+    fields = ('name', 'subject', )
+    template_name = 'quiz_add_form.html'
+
+    def form_valid(self, form):
+        quiz = form.save(commit=False)
+        quiz.person = self.request.user
+        quiz.save()
+        messages.success(self.request, 'pomyślnie stworzono egzamin! dodaj pytania')
+        return redirect('quiz_change', quiz.pk)
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class QuizUpdateView(UpdateView):
+    model = Quiz
+    fields = ('name', 'subject', )
+    context_object_name = 'quiz'
+    template_name = 'quiz_change_form.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['questions'] = self.get_object().questions.annotate(answers_count=Count('answers'))
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return self.request.user.quizzes.all()
+
+    def get_success_url(self):
+        return reverse('quiz_change', kwargs = {'pk': self.object.pk})
+
+class QuizSubjectCreateView(CreateView):
+    model = Subject
+    fields = ('name', )
+    template_name = 'quiz_add_subject.html'
+
+    def form_valid(self, form):
+        subject = form.save()
+        messages.success(self.request, 'pomyślnie stworzono temat')
+        return redirect('quiz_change_list')
