@@ -1,3 +1,5 @@
+from django.utils import timezone
+import pytz 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.html import escape, mark_safe
@@ -27,7 +29,7 @@ class Quiz(models.Model):
     #poszczególny test dla konkretnego użytkownika
     person = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'quizzes')
     name = models.CharField(max_length=100)
-    date_access = models.DateTimeField('RRRR-MM-DD HH:MM:SS')
+    date_access = models.DateTimeField('RRRR-MM-DD HH:MM:SS',default= timezone.now)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name = 'quizzes')
 
     def __str__(self):
