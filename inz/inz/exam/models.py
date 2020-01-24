@@ -27,6 +27,7 @@ class Quiz(models.Model):
     #poszczególny test dla konkretnego użytkownika
     person = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'quizzes')
     name = models.CharField(max_length=100)
+    date_access = models.DateTimeField('RRRR-MM-DD HH:MM:SS')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name = 'quizzes')
 
     def __str__(self):

@@ -22,6 +22,7 @@ from inz.exam import views
 
 urlpatterns = [
     path('',views.home, name='home'),
+    path('test/',views.test.as_view(), name='test'),
     path('students/', views.StudentQuizListView.as_view(), name='quiz_list'),
     path('students/interests/', views.StudentInterestsView.as_view(), name='student_interests'),
     path('students/quiz/<int:pk>/studentresults/', views.StudentQuizResultsView.as_view(), name='student_quiz_results'),

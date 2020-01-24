@@ -17,6 +17,7 @@
           <th>Temat</th>
           <th>ilość pytań</th>
           <th>Rozwiązane</th>
+          <th>Data dostępu</th>
           <th></th>
         </tr>
       </thead>
@@ -27,7 +28,8 @@
             <td class="align-middle">{{ quiz.subject.get_html_badge }}</td>
             <td class="align-middle">{{ quiz.questions_count }}</td>
             <td class="align-middle">{{ quiz.taken_count }}</td>
-            <td class="text-right">
+            <td class="align-middle">{{ quiz.date_access }}</td>
+            <td class="text-right"> 
 
             </td>
           </tr>

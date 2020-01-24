@@ -1,9 +1,10 @@
+from datetime import datetime
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django.forms.utils import ValidationError
 
-from .models import (Answer, Question, Student, User, Subject, StudentAnswer)
+from .models import (Answer, Question, Student, User, Subject, StudentAnswer, Quiz)
 
 
 class TeacherSignUpForm(UserCreationForm):
@@ -43,7 +44,7 @@ class StudentSignUpForm(UserCreationForm):
 class StudentInterestsForm(forms.ModelForm):
     interests = forms.ModelMultipleChoiceField(
         queryset=Subject.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.RadioSelect(),
         required=True
     )
     class Meta:
@@ -52,6 +53,8 @@ class StudentInterestsForm(forms.ModelForm):
         #widget = {
         #'interests': forms.CheckboxSelectMultiple,
         #}
+
+
 
 
 class QuestionForm(forms.ModelForm):

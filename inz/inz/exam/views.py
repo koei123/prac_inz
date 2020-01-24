@@ -1,3 +1,8 @@
+from django.utils import timezone
+import pytz
+from django.contrib.admin.widgets import AdminDateWidget
+from datetime import datetime
+from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -16,6 +21,18 @@ from .forms import (TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm
 , TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
 
 from .models import User, Quiz, Student, TakenQuiz, Question, Answer, Subject
+
+class test(CreateView):
+    model = Quiz
+    fields = ('name', 'date_access', )
+    template_name = 'test.html'
+
+    def get_form(self):
+        form = super().get_form()
+        form.fields['date_access'].widget =  forms.DateTimeInput(attrs={'type': 'AdminDateWidget'})
+        return form
+
+
 
 
 class SignUpView(TemplateView):
@@ -89,12 +106,14 @@ class StudentQuizListView(ListView):
 
     def get_queryset(self):
         student = self.request.user.student
+        now = timezone.now()
         student_interests = student.interests.values_list('pk', flat=True)
         taken_quizzes = student.quizzes.values_list('pk', flat=True)
         queryset = Quiz.objects.filter(subject__in=student_interests) \
             .exclude(pk__in=taken_quizzes) \
             .annotate(questions_count=Count('questions')) \
-            .filter(questions_count__gt=0)
+            .filter(questions_count__gt=0) \
+            .filter(date_access__lt=now)
         return queryset
 
 @method_decorator([login_required, student_required], name='dispatch')
@@ -151,7 +170,7 @@ def take_quiz(request, pk):
                     return redirect('take_quiz', pk)
                 else:
                     correct_answers = student.quiz_answers.filter(answer__question__quiz=quiz, answer__is_correct=True).count()
-                    percentage = round((correct_answers / (total_questions+correct_answers)) *100.0, 2)
+                    percentage = round((correct_answers / (total_questions)) *100.0, 2)
                     TakenQuiz.objects.create(student=student, quiz=quiz, score=correct_answers, percentage=percentage)
                     student.save()
                     if percentage < 50.0:
@@ -190,8 +209,9 @@ class TeacherQuizListView(ListView):
 class QuizCreateView(CreateView):
     """docstring for QuizCreateView."""
     model = Quiz
-    fields = ('name', 'subject', )
+    fields = ('name', 'subject', 'date_access')
     template_name = 'quiz_add_form.html'
+
 
     def form_valid(self, form):
         quiz = form.save(commit=False)
