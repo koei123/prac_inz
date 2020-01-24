@@ -41,12 +41,17 @@ class StudentSignUpForm(UserCreationForm):
 
 #forms dla Studenta
 class StudentInterestsForm(forms.ModelForm):
+    interests = forms.ModelMultipleChoiceField(
+        queryset=Subject.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True
+    )
     class Meta:
         model = Student
         fields = ('interests', )
-        widget = {
-        'interests': forms.CheckboxSelectMultiple,
-        }
+        #widget = {
+        #'interests': forms.CheckboxSelectMultiple,
+        #}
 
 
 class QuestionForm(forms.ModelForm):
@@ -83,6 +88,7 @@ class TakeQuizForm(forms.ModelForm):
     class Meta:
         model = StudentAnswer
         fields = ('answer', )
+
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop('question')
