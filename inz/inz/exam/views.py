@@ -1,7 +1,7 @@
 from django.utils import timezone
 import pytz
 from django.contrib.admin.widgets import AdminDateWidget
-from datetime import datetime
+from datetime import datetime, timedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -209,7 +209,7 @@ class TeacherQuizListView(ListView):
 class QuizCreateView(CreateView):
     """docstring for QuizCreateView."""
     model = Quiz
-    fields = ('name', 'subject', 'date_access')
+    fields = ('name', 'subject', 'date_access', 'date_access_end' , 'time_access', )
     template_name = 'quiz_add_form.html'
 
 

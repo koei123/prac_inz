@@ -44,7 +44,7 @@ class StudentSignUpForm(UserCreationForm):
 class StudentInterestsForm(forms.ModelForm):
     interests = forms.ModelMultipleChoiceField(
         queryset=Subject.objects.all(),
-        widget=forms.RadioSelect(),
+        widget=forms.CheckboxSelectMultiple(),
         required=True
     )
     class Meta:
