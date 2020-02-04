@@ -9,6 +9,7 @@
           <th>Egzamin</th>
           <th class="d-none d-sm-table-cell">Temat</th>
           <th class="d-none d-sm-table-cell">ilość pytań</th>
+          <th class="d-none d-sm-table-cell">koniec dostępu</th>
           <th></th>
         </tr>
       </thead>
@@ -18,6 +19,7 @@
             <td class="align-middle">{{ quiz.name }}</td>
             <td class="align-middle d-none d-sm-table-cell">{{ quiz.subject.get_html_badge }}</td>
             <td class="align-middle d-none d-sm-table-cell">{{ quiz.questions_count }}</td>
+            <td class="align-middle d-none d-sm-table-cell text-danger">{{ quiz.date_access_end }}</td>
             <td class="text-right">
               <a href="{% url 'take_quiz' quiz.pk %}" class="btn btn-primary">Start!</a>
             </td>

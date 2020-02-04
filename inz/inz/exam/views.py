@@ -1,4 +1,5 @@
 from django.utils import timezone
+import time
 import pytz
 from django.contrib.admin.widgets import AdminDateWidget
 from datetime import datetime, timedelta
@@ -113,7 +114,7 @@ class StudentQuizListView(ListView):
             .exclude(pk__in=taken_quizzes) \
             .annotate(questions_count=Count('questions')) \
             .filter(questions_count__gt=0) \
-            .filter(date_access__lt=now)
+            .filter(date_access__lt=now, date_access_end__gt=now)
         return queryset
 
 @method_decorator([login_required, student_required], name='dispatch')
@@ -152,6 +153,7 @@ def take_quiz(request, pk):
     if student.quizzes.filter(pk=pk).exists():
         return render(request, 'taken_quiz.html')
 
+
     total_questions = quiz.questions.count()
     unanswered_questions = student.get_unanswered_question(quiz)
     total_unanswered_questions = unanswered_questions.count()
@@ -166,6 +168,7 @@ def take_quiz(request, pk):
                 student_answer = form.save(commit=False)
                 student_answer.student = student
                 student_answer.save()
+
                 if student.get_unanswered_question(quiz).exists():
                     return redirect('take_quiz', pk)
                 else:
@@ -189,6 +192,9 @@ def take_quiz(request, pk):
     'answered_questions': total_questions - total_unanswered_questions,
     'total_questions': total_questions
     })
+
+
+
 #views dla nauczyciela
 @method_decorator([login_required, teacher_required], name='dispatch')
 class TeacherQuizListView(ListView):
@@ -209,7 +215,7 @@ class TeacherQuizListView(ListView):
 class QuizCreateView(CreateView):
     """docstring for QuizCreateView."""
     model = Quiz
-    fields = ('name', 'subject', 'date_access', 'date_access_end' , 'time_access', )
+    fields = ('name', 'subject', 'date_access', 'date_access_end' , 'time_access', 'second_chance' )
     template_name = 'quiz_add_form.html'
 
 
@@ -365,7 +371,7 @@ class QuizDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         quiz = self.get_object()
-        messages.success(request, 'Examin %s został usunięty pomyślnie' % quiz.name)
+        messages.success(request, 'Egzamin %s został usunięty pomyślnie' % quiz.name)
         return super().delete(request, *args, **kwargs)
 
     def get_queryset(self):
