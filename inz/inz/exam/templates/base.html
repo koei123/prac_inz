@@ -14,8 +14,11 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
           <div class="container">
       <a class="navbar-brand" href="{% url 'home' %}">ExamAPP</a>
-      <a class="navbar-brand" href="{% url 'test' %}">informacje</a>
-      <a class="navbar-brand" href="{% url 'test' %}">Profil</a>
+      {% if user.is_student %}
+      <a class="navbar-brand" href="{% url 'student_post_list' %}">informacje</a>
+      {% else %}
+      <a class="navbar-brand" href="{% url 'post_list' %}">Informacje</a>
+      {% endif %}
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -41,16 +44,16 @@
               {{ user.username }}
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="{% url 'password_change' %}">Change password</a>
+              <a class="dropdown-item" href="{% url 'password_change' %}">Zmień hasło</a>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="{% url 'logout' %}">Log out</a>
+              <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj</a>
             </div>
           </li>
         </ul>
         {% else %}
         <form class="form-inline my-2 my-lg-0">
-          <a href="{% url 'login' %}" class="btn btn-outline-secondary"> Log in </a>
-          <a href="{% url 'signup' %}" class="btn btn-primary ml-2"> Sign up </a>
+          <a href="{% url 'login' %}" class="btn btn-outline-secondary"> Zaloguj się </a>
+          <a href="{% url 'signup' %}" class="btn btn-primary ml-2"> Zarejestruj się </a>
         </form>
         {% endif %}
       </div>

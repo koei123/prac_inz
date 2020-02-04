@@ -99,3 +99,18 @@ class StudentAnswer(models.Model):
     #odpowiedzi studenta
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='quiz_answers')
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='plus')
+
+
+class Post(models.Model):
+    title = models.CharField('Temat', max_length=200, unique=True)
+    author = models.ForeignKey(User, on_delete= models.CASCADE, related_name = 'blog_posts')
+    category = models.ForeignKey(Subject, on_delete = models.CASCADE, related_name = 'blog_posts', verbose_name = 'Kategoria')
+    updated_on = models.DateTimeField(auto_now=True)
+    content = models.TextField('Treść')
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_on']
+
+    def __str__(self):
+        return self.title

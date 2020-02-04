@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    body {
+        font-family: "Roboto", sans-serif;
+        font-size: 18px;
+        background-color: #fdfdfd;
+    }
+
+    .head_text {
+        color: white;
+    }
+
+    .card {
+        box-shadow: 0 16px 48px #E3E7EB;
+    }
+</style>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Moje posty</li>
+  </ol>
+</nav>
+<h2 class="mb-3 ">Moje posty</h2>
+<a href="{% url 'post_add' %}" class="btn btn-primary mb-3 " role="button">Dodaj post</a>
+
+
+
+
+
+            {% for post in blog_posts %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="card-title">{{ post.title }}</h2>
+                    <p class="card-text text-muted h6">{{ post.category.get_html_badge }}</p>
+                    <p class="card-text text-muted h6">{{ post.author }} | {{ post.created_on}} </p>
+                    <p class="card-text">{{post.content|slice:":200" }}</p>
+                    <a href="{% url 'post_detail' post.pk  %}" class="btn btn-primary">Wiecej &rarr;</a>
+                </div>
+            </div>
+            {% endfor %}
+
+
+
+{%endblock%}

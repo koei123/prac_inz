@@ -21,7 +21,7 @@ from .decorators import student_required, teacher_required
 from .forms import (TeacherSignUpForm, StudentSignUpForm, StudentInterestsForm
 , TakeQuizForm, QuestionForm, BaseAnswerInLineFormSet)
 
-from .models import User, Quiz, Student, TakenQuiz, Question, Answer, Subject
+from .models import User, Quiz, Student, TakenQuiz, Question, Answer, Subject, Post
 
 class test(CreateView):
     model = Quiz
@@ -376,3 +376,52 @@ class QuizDeleteView(DeleteView):
 
     def get_queryset(self):
         return self.request.user.quizzes.all()
+
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class PostCreateView(CreateView):
+    model = Post
+    fields = ('title', 'category', 'content', )
+    template_name = 'post_add_form.html'
+
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        messages.success(self.request, 'pomyślnie stworzono post!')
+        return redirect('post_list')
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class TeacherPostListView(ListView):
+    """docstring for TeacherQuizListView."""
+    model = Post
+    ordering = ('title', )
+    context_object_name = 'blog_posts'
+    template_name = 'teacher_post.html'
+
+    def get_queryset(self):
+        queryset = self.request.user.blog_posts \
+            .select_related('category')
+        return queryset
+
+
+
+@method_decorator([login_required, student_required], name='dispatch')
+class StudentPostListView(ListView):
+    model = Post
+    ordering = ('title', )
+    context_object_name = 'blog_posts'
+    template_name = 'student_post_list.html'
+
+    def get_queryset(self):
+        student = self.request.user.student
+        student_interests = student.interests.values_list('pk', flat=True)
+        queryset = Post.objects.filter(category__in=student_interests) 
+        return queryset
+
+
+class PostDetailView(DetailView):
+    model = Post
+    context_object_name = 'post'
+    template_name = 'post_detail.html'

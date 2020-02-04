@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2> Witaj w aplikacji do tworzenia egzaminów</h2>
-<p> Hi {% if user.is_authenticated %}{{ user.username }} {% else %}visitor {% endif %}</p>
+<p> Cześć {% if user.is_authenticated %}{{ user.username }} {% else %} nieznajomy {% endif %}</p>
 <p class="lead">
   jeżeli masz konto, zaloguj sie. Jezeli nie masz konta utwórz nowe jako student lub nauczyciel.
 </p>
