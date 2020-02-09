@@ -215,7 +215,7 @@ class TeacherQuizListView(ListView):
 class QuizCreateView(CreateView):
     """docstring for QuizCreateView."""
     model = Quiz
-    fields = ('name', 'subject', 'date_access', 'date_access_end' , 'time_access', 'second_chance' )
+    fields = ('name', 'subject', 'date_access', 'date_access_end'  )
     template_name = 'quiz_add_form.html'
 
 
@@ -417,7 +417,7 @@ class StudentPostListView(ListView):
     def get_queryset(self):
         student = self.request.user.student
         student_interests = student.interests.values_list('pk', flat=True)
-        queryset = Post.objects.filter(category__in=student_interests) 
+        queryset = Post.objects.filter(category__in=student_interests)
         return queryset
 
 

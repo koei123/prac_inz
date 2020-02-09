@@ -26,20 +26,12 @@ class Subject(models.Model):
         return mark_safe(html)
 
 class Quiz(models.Model):
-    TIMES_CHOICES = (
-    (None, 'brak limitu'),
-    (15, '15 minut'),
-    (30, '30 minut'),
-    (60, '1 godzina'),
-    )
     #poszczególny test dla konkretnego użytkownika
 
     person = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'quizzes')
     name = models.CharField('Nazwa', max_length=100)
     date_access = models.DateTimeField('Data dostępu (RRRR-MM-DD HH:MM:SS)',default= timezone.now)
     date_access_end = models.DateTimeField('Data zakończenia (RRRR-MM-DD HH:MM:SS)',default= timezone.now() + timezone.timedelta(days=7))
-    time_access = models.IntegerField('Dostępny przez', choices=TIMES_CHOICES, blank = True, null=True)
-    second_chance = models.BooleanField('Dodatkowe podejście', default = True)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name = 'quizzes', verbose_name='Przedmiot')
 
     def __str__(self):
